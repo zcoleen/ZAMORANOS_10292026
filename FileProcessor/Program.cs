@@ -1,4 +1,6 @@
+using FileProcessingApi.Middleware;
 using FileProcessor.Security;
+using FileProcessor.Services;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +26,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddSingleton<CsvProcessingService>();
+
 builder.Services
     .AddOptions<ApiOptions>()
     .Bind(builder.Configuration.GetSection(ApiOptions.SectionName))
@@ -42,6 +45,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));

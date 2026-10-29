@@ -1,0 +1,4 @@
+﻿FullName,ClaimsAmount,ClaimType,ClaimDateMMDDYYYY
+Marie Johnson,1000.00,Auto,01/15/2024
+Edward Smith,2500.50,Home,02/20/2024
+Jessica Brown,1500.75,Health,03/10/2024
