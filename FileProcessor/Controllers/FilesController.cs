@@ -10,12 +10,15 @@ namespace FileProcessor.Controllers
     {
         private readonly CsvProcessingService _csvProcessingService;
         private readonly ILogger<FilesController> _logger;
+        private readonly FileTrackingService _fileTrackingService;
         public FilesController(
             CsvProcessingService csvProcessingService,
-            ILogger<FilesController> logger)
+            ILogger<FilesController> logger,
+            FileTrackingService fileTrackingService)
         {
             _csvProcessingService = csvProcessingService;
             _logger = logger;
+            _fileTrackingService = fileTrackingService;
         }
         [HttpPost]
         [RequestSizeLimit(1_048_576)]
@@ -39,7 +42,14 @@ namespace FileProcessor.Controllers
                 var result = await _csvProcessingService.ProcessAsync(
                     stream,
                     Path.GetFileName(file.FileName),
-                    cancellationToken);                
+                    cancellationToken);
+
+                _fileTrackingService.Add(new ProcessingRecord(
+                result.FileName,
+                result.RowsProcessed,
+                result.RowsSkipped,
+                result.ProcessingTimeMs,
+                DateTimeOffset.UtcNow));
 
                 return Ok(result);
             }
@@ -49,7 +59,12 @@ namespace FileProcessor.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-  
+
+        [HttpGet("report")]
+        public ActionResult<ProcessingReport> GetReport()
+        {
+            return Ok(_fileTrackingService.GetReport());
+        }
     }
 
 }

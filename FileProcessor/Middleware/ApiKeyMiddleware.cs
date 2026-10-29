@@ -1,6 +1,7 @@
 ﻿using FileProcessor.Security;
 using Microsoft.Extensions.Options;
-namespace FileProcessingApi.Middleware;
+
+namespace FileProcessor.Middleware;
 
 public sealed class ApiKeyMiddleware
 {

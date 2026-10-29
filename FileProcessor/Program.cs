@@ -1,4 +1,5 @@
-using FileProcessingApi.Middleware;
+
+using FileProcessor.Middleware;
 using FileProcessor.Security;
 using FileProcessor.Services;
 using Microsoft.OpenApi;
@@ -11,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    options.AddSecurityDefinition("ApiKey", new Microsoft.OpenApi.OpenApiSecurityScheme
     {
         Description = "Type the API key.",
         Name = "X-Api-Key",
@@ -27,6 +28,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddSingleton<CsvProcessingService>();
+builder.Services.AddSingleton<FileTrackingService>();
 
 builder.Services
     .AddOptions<ApiOptions>()
@@ -34,7 +36,11 @@ builder.Services
     .Validate(options => !string.IsNullOrWhiteSpace(options.ApiKey), "ApiSecurity:ApiKey is required.")
     .ValidateOnStart();
 
+
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -42,12 +48,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
 app.UseMiddleware<ApiKeyMiddleware>();
 
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
-
 app.Run();
